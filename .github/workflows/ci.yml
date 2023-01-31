@@ -69,7 +69,7 @@ jobs:
           image: node-hello-world
           tags: latest ${{ github.sha }}
           containerfiles: |
-            ./Containerfile
+            ./Dockerfile
 
       - name: Push To quay.io
         id: push-to-quay
