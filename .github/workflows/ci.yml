@@ -1,0 +1,84 @@
+# .github/workflows/ci.yml
+
+# Continuous Integration (CI) Workflow
+name: ci
+
+# This workflow will run whenever we push commits to the `main` branch, or
+# whenever there's a pull request to the `main` branch. See:
+# https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#on
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  lint:
+    # Give your job a name that will show up in the GitHub Actions web UI
+    name: ESLint
+    # We'll run this on a Linux (Ubuntu) VM, since we'll deploy on Linux too.
+    runs-on: ubuntu-latest
+    # We run these steps one after the other, and if any fail, we stop the process
+    steps:
+      # https://github.com/actions/checkout
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      # https://github.com/actions/setup-node
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          # Use node LTS version 18 - https://github.com/actions/setup-node#supported-version-syntax
+          node-version: '18'
+          # Cache npm dependencies so they don't have to be downloaded next time - https://github.com/actions/setup-node#caching-packages-dependencies
+          cache: 'npm'
+
+      - name: Install node dependencies
+        # Use `ci` vs. `install`, see https://docs.npmjs.com/cli/v8/commands/npm-ci
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+  # Lint our Dockerfile using Hadolint
+  dockerfile-lint:
+    name: Dockerfile Lint
+    runs-on: ubuntu-latest
+    steps:
+      # https://github.com/marketplace/actions/hadolint-action
+      - uses: actions/checkout@v2
+      - uses: hadolint/hadolint-action@v1.6.0
+        with:
+          dockerfile: Dockerfile
+
+  push-to-quayio:
+    name: Build and Push to Quay.io
+    # Don't bother running this job unless the other three all pass
+    needs: [lint, dockerfile-lint]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+    - name: Build Image
+      id: build-image
+      uses: redhat-actions/buildah-build@v2
+      with:
+        image: node-hello-world
+        tags: latest ${{ github.sha }}
+        containerfiles: |
+          ./Containerfile
+
+      - name: Push To quay.io
+      id: push-to-quay
+      uses: redhat-actions/push-to-registry@v2
+      with:
+        image: ${{ steps.build-image.outputs.image }}
+        tags: ${{ steps.build-image.outputs.tags }}
+        registry: quay.io/lmpham1
+        username: lmpham1
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+
+    - name: Print image url
+      run: echo "Image pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
