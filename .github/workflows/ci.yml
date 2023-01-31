@@ -62,14 +62,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-    - name: Build Image
-      id: build-image
-      uses: redhat-actions/buildah-build@v2
-      with:
-        image: node-hello-world
-        tags: latest ${{ github.sha }}
-        containerfiles: |
-          ./Containerfile
+      - name: Build Image
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: node-hello-world
+          tags: latest ${{ github.sha }}
+          containerfiles: |
+            ./Containerfile
 
       - name: Push To quay.io
       id: push-to-quay
@@ -81,5 +81,5 @@ jobs:
         username: lmpham1
         password: ${{ secrets.REGISTRY_PASSWORD }}
 
-    - name: Print image url
-      run: echo "Image pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
+      - name: Print image url
+        run: echo "Image pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
