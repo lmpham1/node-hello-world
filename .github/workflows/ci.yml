@@ -54,7 +54,7 @@ jobs:
           dockerfile: Dockerfile
 
   #Build and push to Quay.io
-  push-to-quay:
+  quay:
     name: Build and Push to Quay.io
     # Don't bother running this job unless the other three all pass
     needs: [lint, dockerfile-lint]
