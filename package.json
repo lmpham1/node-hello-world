@@ -4,5 +4,23 @@
   },
   "devDependencies": {
     "prettier": "^2.8.3"
-  }
+  },
+  "name": "opsh-test",
+  "version": "0.1.0",
+  "main": "./src/server.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "test": "node ./src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lmpham1/node-hello-world.git"
+  },
+  "author": "Le Minh Pham",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lmpham1/node-hello-world/issues"
+  },
+  "homepage": "https://github.com/lmpham1/node-hello-world#readme",
+  "description": ""
 }
